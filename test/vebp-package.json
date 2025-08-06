@@ -1,0 +1,9 @@
+{
+    "name": "test",
+    "author": "111",
+    "venv": ".venv",
+    "version": "",
+    "main": "run.py",
+    "scripts": {},
+    "dependencies": {}
+}
