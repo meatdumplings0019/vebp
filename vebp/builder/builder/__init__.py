@@ -246,7 +246,7 @@ class Builder(BaseBuilder):
         )
 
     def _get_cmd(self, python_path) -> list[str]:
-        cmd = [str(python_path), '-m', 'PyInstaller', '--noconfirm']
+        cmd = [str(python_path).strip(), '-m', 'PyInstaller', '--noconfirm']
 
         if self.onefile:
             cmd.append('--onefile')
