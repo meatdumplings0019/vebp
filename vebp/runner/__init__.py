@@ -1,14 +1,14 @@
-import subprocess
 import sys
-from pathlib import Path
 
 from vebp.data.package import Package
 from vebp.libs.color import print_red
-from vebp.libs.venv import venv_path
+from vebp.libs.system import SystemConsole
+from vebp.libs.venvs import venv_path
 
 
 class Runner:
     _builtin_mappings = {
+        "build": ["vebp", "build"],
     }
 
     _plugin_mappings = {}
@@ -16,7 +16,7 @@ class Runner:
     def __init__(self, app, command):
         self._builtin_mappings = {
             **self._builtin_mappings,
-            "run": str(venv_path(app.package.get(".venv", ".venv")))
+            "run": str(venv_path(app.package.get(".venvs", ".venvs")))
         }
 
         self.command = command
@@ -32,7 +32,7 @@ class Runner:
             self._builtin_mappings.get(command_head, command_head)
         )
 
-        return [resolved] + parts[1:]
+        return [*[i for i in list(resolved)], *parts[1:]]
 
 
     def get_available_commands(self):
@@ -52,19 +52,12 @@ class Runner:
                 raise
 
             command_str = scripts[self.command]
-            print(f"🚀 执行脚本: {self.command}")
 
-            # 解析命令映射
             resolved_command = self.resolve_command(command_str)
 
-            print(f"📜 命令: {' '.join(resolved_command)}")
-
-            print("")
-
-            subprocess.run(
+            SystemConsole.execute(
                 resolved_command,
-                shell=True,
-                cwd=Path.cwd(),
+                shell=True
             )
 
         except FileNotFoundError:

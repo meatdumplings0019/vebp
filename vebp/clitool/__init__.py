@@ -167,7 +167,9 @@ class CliTool:
         if name in self.cmd_commands.keys():
             raise RuntimeError(f"Command {name} already registered")
 
-        self.cmd_commands[name] = func
+        self.cmd_commands[name] = {}
+
+        self.cmd_commands[name]["func"] = func
 
     def get(self, name) -> "CliTool":
         """
@@ -206,7 +208,7 @@ class CliTool:
         _command = self.args[0]
         for c in self.cmd_commands.keys():
             if c == _command:
-                smart_call(self.cmd_commands[c], self)
+                smart_call(self.cmd_commands[c]["func"], self)
                 return True
 
         return False

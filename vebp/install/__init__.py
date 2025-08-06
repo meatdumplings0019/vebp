@@ -6,9 +6,9 @@ from vebp.config import mirror_url
 from vebp.data.package import Package
 from vebp.libs.color import print_red
 from vebp.libs.system import SystemConsole
-from vebp.libs.venv.package import is_package_installed
-from vebp.libs.venv.pip import pip_command
-from vebp.libs.venv.version import get_package_version
+from vebp.libs.venvs.package import is_package_installed
+from vebp.libs.venvs.pip import pip_command
+from vebp.libs.venvs.version import get_package_version
 
 
 class Installer:
@@ -69,7 +69,7 @@ class Installer:
 
         if installed > 0:
             cmd = [
-                *pip_command(self.package.get("venv", ".venv")),
+                *pip_command(self.package.get("venvs", ".venvs")),
                 "install",
                 *to_install,
                 "-i",
@@ -99,7 +99,7 @@ class Installer:
         total = len(to_uninstall)
 
         cmd = [
-            *pip_command(self.package.get("venv", ".venv")),
+            *pip_command(self.package.get("venvs", ".venvs")),
             "uninstall",
             *to_uninstall,
             "-y"

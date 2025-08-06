@@ -82,7 +82,8 @@ class SystemConsole:
             shell=shell,
             capture_output=capture_output,
             text=True,
-            check=check
+            check=check,
+            cwd=Path.cwd(),
         )
 
     @classmethod

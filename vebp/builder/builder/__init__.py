@@ -11,7 +11,7 @@ from vebp.data.package import Package
 from vebp.libs.color import print_red
 from vebp.libs.file import FileStream, FolderStream
 from vebp.libs.system import SystemConsole
-from vebp.libs.venv import venv_path
+from vebp.libs.venvs import venv_path
 
 
 class Builder(BaseBuilder):
@@ -83,7 +83,7 @@ class Builder(BaseBuilder):
             return None
 
         builder = Builder(app, package_config.get('name', None), sub=sub, parent_path=parent, base_path=base_path)
-        builder.venv = package_config.get('venv', '.venv')
+        builder.venv = package_config.get('venvs', '.venvs')
 
         builder.set_script(package_config.get('main', None))
         builder.set_console(build_config.get('console', False))

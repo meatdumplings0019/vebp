@@ -7,6 +7,8 @@ from vebp.command.plugin.install import plugin_install_command
 from vebp.command.plugin.list import plugin_list_command
 from vebp.command.plugin.uninstall import plugin_uninstall_command
 from vebp.command.plugin.unload import plugin_unload_command
+from vebp.command.python import python_command
+from vebp.command.python.version import python_version_command
 from vebp.command.runner import run_command
 from vebp.command.setter import set_command
 from vebp.command.uninstall import uninstall_command
@@ -30,7 +32,7 @@ def add_command(app):
         app.add_sub_argument("uninstall", "packages", nargs="+")
 
         app.set_sub_main_func("uninstall", uninstall_command, app)
-    def sets():
+    def setter():
         app.add_command("set", "💿 设置")
         app.add_sub_argument("set", "args", nargs="+")
 
@@ -97,11 +99,26 @@ def add_command(app):
         app.add_sub_argument("run", 'script', help='📜 要运行的脚本名称')
 
         app.set_sub_main_func("run", run_command, app)
+    def python():
+        def python_version(p):
+            p.set_sub_main_func("version", python_version_command, app)
+
+        app.add_command("python", "🧩 Python tool")
+
+        app.add_sub_argument("python", '--version', '-v', action='store_true',
+                             _help='ℹ️ 显示Python版本信息')
+
+        app.set_sub_main_func("python", python_command, app)
+
+        app.add_sub_command("python", "version", 'ℹ️ 显示Python版本信息')
+
+        python_version(app.get("python"))
 
     init()
     install()
     uninstall()
-    sets()
+    setter()
     build()
     plugin()
     run()
+    python()

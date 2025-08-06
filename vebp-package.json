@@ -1,10 +1,13 @@
 {
     "name": "vebp",
-    "author": "",
+    "author": "ndrzy",
     "venv": ".venv",
     "version": "1.0.0",
     "main": "run.py",
-    "scripts": {},
+    "scripts": {
+        "dev": "run run.py",
+        "build": "build"
+    },
     "dependencies": {
         "questionary": "2.1.0",
         "colorama": "0.4.6",
