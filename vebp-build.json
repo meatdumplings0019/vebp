@@ -1,3 +1,4 @@
 {
-    "console": true
+    "console": true,
+    "icon": "icon.ico"
 }
