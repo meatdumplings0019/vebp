@@ -19,6 +19,7 @@ AppPublisher={#MyAppPublisher}
 AppPublisherURL={#MyAppURL}
 AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
+LicenseFile=.\LICENSE.txt
 DefaultDirName=C:\Program Files\{#MyAppName}
 DisableProgramGroupPage=yes
 ChangesEnvironment=yes
