@@ -1,0 +1,107 @@
+from vebp.command.build import build_command
+from vebp.command.init import init_command
+from vebp.command.install import install_command
+from vebp.command.plugin import plugin_command
+from vebp.command.plugin.build import plugin_build_command
+from vebp.command.plugin.install import plugin_install_command
+from vebp.command.plugin.list import plugin_list_command
+from vebp.command.plugin.uninstall import plugin_uninstall_command
+from vebp.command.plugin.unload import plugin_unload_command
+from vebp.command.runner import run_command
+from vebp.command.setter import set_command
+from vebp.command.uninstall import uninstall_command
+
+
+def add_command(app):
+    def init():
+        app.add_command("init", "🛠️ 初始化项目配置")
+        app.add_sub_argument("init", "path", default=".", nargs="?")
+        app.add_sub_argument("init", "--force", "-f", "store_true", default=False)
+        app.add_sub_argument("init", "--plugin", "-p", "store_true", default=False)
+
+        app.set_sub_main_func("init", init_command, app)
+    def install():
+        app.add_command("install", "💿 安装python包")
+        app.add_sub_argument("install", "packages", nargs="+")
+
+        app.set_sub_main_func("install", install_command, app)
+    def uninstall():
+        app.add_command("uninstall", "💿 卸载python包")
+        app.add_sub_argument("uninstall", "packages", nargs="+")
+
+        app.set_sub_main_func("uninstall", uninstall_command, app)
+    def sets():
+        app.add_command("set", "💿 设置")
+        app.add_sub_argument("set", "args", nargs="+")
+
+        app.set_sub_main_func("set", set_command, app)
+    def build():
+        app.add_command('build', _help='🔨 构建可执行文件')
+
+        app.add_sub_argument("build", 'name', nargs='?', default=None,
+                                  _help='📛 项目名称 (如果在 vebp-build.json 中定义了则为可选)')
+        app.add_sub_argument("build", '--src', '-s',
+                                  _help='📜 要打包的 Python 脚本路径 (如果在 vebp-build.json 中定义了则为可选)')
+
+        app.add_sub_argument("build", '--icon', '-i',
+                                  _help='🖼️ 应用程序图标 (.ico 文件)')
+        app.add_sub_argument("build", '--console', '-c', action='store_true',
+                                  _help='🖥️ 显示控制台窗口 (默认隐藏)')
+        app.add_sub_argument("build", '--onedir', '-d', action='store_true',
+                                  _help='📁 使用目录模式而不是单文件模式 (默认: 单文件)')
+
+        app.add_sub_argument("build", '--asset', action='append',
+                                  _help='📦 外部资源: "源路径;目标相对路径" (复制到输出目录)')
+        app.add_sub_argument("build", '--in_asset', action='append',
+                                  _help='📦 内部资源: "源路径;目标相对路径" (嵌入到可执行文件中)')
+
+        app.set_sub_main_func("build", build_command, app)
+    def plugin():
+        def plugin_build(p):
+            p.add_sub_argument("build", "path", _help="📂 插件路径")
+
+            p.set_sub_main_func("build", plugin_build_command, app)
+        def plugin_install(p):
+            p.add_sub_argument("install", "path", _help="📂 插件路径")
+
+            p.set_sub_main_func("install", plugin_install_command, app)
+        def plugin_uninstall(p):
+            p.add_sub_argument("uninstall", "name", _help="📂 插件名称")
+
+            p.set_sub_main_func("uninstall", plugin_uninstall_command, app)
+        def plugin_unload(p):
+            p.add_sub_argument("unload", "name", _help="📂 插件名称")
+
+            p.set_sub_main_func("unload", plugin_unload_command, app)
+        def plugin_list(p):
+            p.set_sub_main_func("list", plugin_list_command , app)
+
+        app.add_command("plugin", "🧩 PluginConfig Tool")
+
+        app.set_sub_main_func("plugin", plugin_command, app)
+
+        app.add_sub_command("plugin", "build", '🔨 构建插件')
+        app.add_sub_command("plugin", 'install', "💿 安装插件")
+        app.add_sub_command("plugin", 'uninstall', "💿 卸载插件")
+        app.add_sub_command("plugin", 'unload', "💿 停止加载插件")
+        app.add_sub_command("plugin", 'list', "💿 展示插件")
+
+        plugin_build(app.get("plugin"))
+        plugin_install(app.get("plugin"))
+        plugin_uninstall(app.get("plugin"))
+        plugin_unload(app.get("plugin"))
+        plugin_list(app.get("plugin"))
+    def run():
+        app.add_command("run", "🚀 运行 package 中定义的脚本")
+
+        app.add_sub_argument("run", 'script', help='📜 要运行的脚本名称')
+
+        app.set_sub_main_func("run", run_command, app)
+
+    init()
+    install()
+    uninstall()
+    sets()
+    build()
+    plugin()
+    run()

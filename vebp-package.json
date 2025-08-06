@@ -1,0 +1,14 @@
+{
+    "name": "vebp",
+    "author": "",
+    "venv": ".venv",
+    "version": "1.0.0",
+    "main": "run.py",
+    "scripts": {},
+    "dependencies": {
+        "questionary": "2.1.0",
+        "colorama": "0.4.6",
+        "pyinstaller": "6.14.2"
+    },
+    "url": "https://mirrors.aliyun.com/pypi/simple/"
+}
