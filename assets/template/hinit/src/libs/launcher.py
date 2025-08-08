@@ -1,7 +1,7 @@
 import sys
 from functools import wraps
 
-from vebp.libs.color import print_red
+from src.libs.color import print_red
 
 
 def launch(func):

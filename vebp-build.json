@@ -3,7 +3,9 @@
     "icon": "icon.ico",
     "assets": [
         {
-            "from": ["assets"],
+            "from": [
+                "assets"
+            ],
             "to": "."
         }
     ]

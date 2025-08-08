@@ -1,7 +1,7 @@
 import sys
 from functools import wraps
 
-from vebp.libs.color import print_red
+from src.libs.color import print_red
 
 
 def launch(func):
@@ -13,7 +13,7 @@ def launch(func):
             print_red(f"Error: {e}")
             sys.exit(1)
         except KeyboardInterrupt:
-            print_red("\n\n操作已取消")
+            print_red("操作已取消")
             sys.exit(1)
 
     return wrapper

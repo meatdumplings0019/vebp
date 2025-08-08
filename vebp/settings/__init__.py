@@ -13,6 +13,10 @@ class Settings(BaseData):
         "mirror_url": {
             "config": False,
             "default": mirror_url,
+        },
+        "author": {
+            "config": False,
+            "default": "author"
         }
     }
 

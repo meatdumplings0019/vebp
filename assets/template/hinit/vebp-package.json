@@ -1,0 +1,11 @@
+{
+    "name": "$name",
+    "author": "$author",
+    "venv": ".venv",
+    "version": "$version",
+    "main": "run.py",
+    "scripts": {},
+    "dependencies": {
+        "colorama": "0.4.6"
+    }
+}

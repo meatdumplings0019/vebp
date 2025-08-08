@@ -19,6 +19,7 @@ def add_command(app):
     def init():
         app.add_command("init", "🛠️ 初始化项目配置")
         app.add_sub_argument("init", "path", default=".", nargs="?")
+        app.add_sub_argument("init", "--yes", "-y", "store_true", default=False)
         app.add_sub_argument("init", "--force", "-f", "store_true", default=False)
 
         app.set_sub_main_func("init", init_command, app)

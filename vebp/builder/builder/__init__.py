@@ -226,8 +226,8 @@ class Builder(BaseBuilder):
     def _start_build(self, cmd) -> None:
         print(f"\n🔨 开始打包项目: {self.name}")
         print(f"📜 脚本路径: {self.script_path}")
-        print(f"📦 打包模式: {'单文件 ✅' if self.onefile else '带依赖的目录 📁'}")
-        print(f"🖥️ 控制台设置: {'显示 ✅' if self.console else '隐藏 ❌'}")
+        print(f"📦 单文件打包: {'✅' if self.onefile else '❌'}")
+        print(f"🖥️ 显示控制台: {'✅' if self.console else '❌'}")
         print(f"🚀 自动运行: {'✅' if self.auto_run else '❌'}")
 
         if self.in_assets:
