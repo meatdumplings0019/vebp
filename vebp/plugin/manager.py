@@ -1,8 +1,10 @@
+import ast
 import os
 import shutil
 import sys
+from collections.abc import Callable
 from pathlib import Path
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, cast
 
 from vebp.data.package import Package
 from vebp.libs.file import FolderStream, FileStream
@@ -11,6 +13,8 @@ from vebp.libs.path import MPath
 from vebp.libs.zip import ZipContent
 from vebp.plugin import Plugin
 
+def plugin_get_assets_path(app, namespace):
+    return app.plugin_manager.get_plugin(namespace).assets
 
 class PluginManager:
     def __init__(self, app):
@@ -25,6 +29,10 @@ class PluginManager:
         self.package_paths: Dict[str, str] = {}
         # 记录每个插件添加的依赖路径
         self.dependency_paths: Dict[str, List[str]] = {}
+
+        self.function_registry: Dict[str, Callable] = {
+            "get_assets_path": plugin_get_assets_path,
+        }
 
     def load_all_plugin(self):
         """
@@ -172,6 +180,18 @@ class PluginManager:
         try:
             with ModuleLoader(plugin_dir, package_name, "main.py") as module:
                 main_module = module
+
+                # ===== 新增：加载并处理 func.py =====
+                func_file = plugin_dir / "func.py"
+                if func_file.exists():
+                    # 处理 func.py 中的函数
+                    self._process_func_functions(
+                        func_file,
+                        main_module,
+                        self.app,  # 传入 app 实例
+                    )
+                # ===== 新增结束 =====
+
         except Exception as e:
             # 加载失败时移除依赖路径
             self._remove_dependencies_from_path(namespace)
@@ -187,8 +207,6 @@ class PluginManager:
             meta=meta.file
         )
 
-        print(self.app.plugin_data.get(namespace, True, "action"))
-
         if not self.app.plugin_data.get(namespace, True, "action"):
             plugin.disable()
 
@@ -196,6 +214,61 @@ class PluginManager:
         self.package_paths[package_name] = str(plugin_dir)
 
         print(f"✅ 插件加载成功: {namespace} by {author}")
+
+    def _process_func_functions(self, func_file: Path, main_module, app):
+        """
+        处理 func.py 中的函数，替换为内置实现
+
+        :param func_file: func.py 文件路径
+        :param main_module: 插件主模块
+        :param app: 应用实例
+        """
+        # 使用AST解析函数名
+        try:
+            with open(func_file, 'r', encoding='utf-8') as f:
+                source = f.read()
+        except Exception as e:
+            print(f"⚠️ 无法读取 func.py: {e}")
+            return
+
+        function_names = []
+        try:
+            tree = ast.parse(source)
+            for node in tree.body:
+                if isinstance(node, ast.FunctionDef):
+                    function_names.append(node.name)
+        except Exception as e:
+            print(f"⚠️ 解析 func.py 的AST失败: {e}")
+            return
+
+        if not function_names:
+            return
+
+        # 注入内置函数实现
+        for func_name in function_names:
+            # 检查是否已注册该函数
+            if func_name in self.function_registry:
+                # 获取内置函数实现
+                func_impl = self.function_registry[func_name]
+
+                # 创建自动传入 app 的包装函数
+                def make_wrapper(_f: Callable) -> Callable:
+                    def wrapper(*args, **kwargs) -> Any:
+                        return _f(app, *args, **kwargs)
+
+                    # 显式设置类型和文档
+                    wrapper.__name__ = _f.__name__
+                    wrapper.__doc__ = _f.__doc__ if hasattr(_f, '__doc__') else None
+                    # 添加类型注释
+                    wrapper.__annotations__ = getattr(_f, '__annotations__', {})
+                    # 添加原始函数的元数据
+                    wrapper.__original_function = _f  # type: ignore
+                    return wrapper
+
+                wrapped_func = make_wrapper(func_impl)
+
+                # 使用 cast 确保类型检查器理解这是一个可调用对象
+                setattr(main_module, func_name, cast(Callable, wrapped_func))
 
     def run_hook(self, namespace: str, hook_name: str, *args, **kwargs) -> Any:
         """

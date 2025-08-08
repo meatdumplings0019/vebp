@@ -1,14 +1,17 @@
 from pathlib import Path
 
+from vebp.core.data import DataCore
 from vebp.data.build_config import BuildConfig
 from vebp.data.package import Package
+from vebp.libs.types import path_type
 from vebp.plugin.data import PluginData
 from vebp.settings import Settings
 from vebp.libs.file import FolderStream
 
 
-class Core:
-    def __init__(self):
+class Core(DataCore):
+    def __init__(self, namespace: str, path: path_type):
+        super().__init__(namespace, path)
         self.home = Path.home()
 
         self.package = Package()

@@ -3,6 +3,7 @@ from vebp.command.init import init_command
 from vebp.command.install import install_command
 from vebp.command.plugin import plugin_command
 from vebp.command.plugin.build import plugin_build_command
+from vebp.command.plugin.init import plugin_init_command
 from vebp.command.plugin.install import plugin_install_command
 from vebp.command.plugin.list import plugin_list_command
 from vebp.command.plugin.uninstall import plugin_uninstall_command
@@ -19,7 +20,6 @@ def add_command(app):
         app.add_command("init", "🛠️ 初始化项目配置")
         app.add_sub_argument("init", "path", default=".", nargs="?")
         app.add_sub_argument("init", "--force", "-f", "store_true", default=False)
-        app.add_sub_argument("init", "--plugin", "-p", "store_true", default=False)
 
         app.set_sub_main_func("init", init_command, app)
     def install():
@@ -77,6 +77,10 @@ def add_command(app):
             p.set_sub_main_func("unload", plugin_unload_command, app)
         def plugin_list(p):
             p.set_sub_main_func("list", plugin_list_command , app)
+        def plugin_init(p):
+            p.add_sub_argument("init", "path", default=".", nargs="?")
+
+            p.set_sub_main_func("init", plugin_init_command, app)
 
         app.add_command("plugin", "🧩 PluginConfig Tool")
 
@@ -87,12 +91,14 @@ def add_command(app):
         app.add_sub_command("plugin", 'uninstall', "💿 卸载插件")
         app.add_sub_command("plugin", 'unload', "💿 停止加载插件")
         app.add_sub_command("plugin", 'list', "💿 展示插件")
+        app.add_sub_command("plugin", "init", "🛠️ 初始化插件")
 
         plugin_build(app.get("plugin"))
         plugin_install(app.get("plugin"))
         plugin_uninstall(app.get("plugin"))
         plugin_unload(app.get("plugin"))
         plugin_list(app.get("plugin"))
+        plugin_init(app.get("plugin"))
     def run():
         app.add_command("run", "🚀 运行 package 中定义的脚本")
 

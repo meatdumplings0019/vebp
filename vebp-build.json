@@ -1,4 +1,10 @@
 {
     "console": true,
-    "icon": "icon.ico"
+    "icon": "icon.ico",
+    "assets": [
+        {
+            "from": ["assets"],
+            "to": "."
+        }
+    ]
 }

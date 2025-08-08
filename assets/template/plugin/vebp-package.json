@@ -1,8 +1,8 @@
 {
-    "name": "test",
-    "author": "author",
+    "name": "$name",
+    "author": "$author",
     "venv": ".venv",
-    "version": "1",
+    "version": "$version",
     "main": "main.py",
     "scripts": {},
     "dependencies": {}

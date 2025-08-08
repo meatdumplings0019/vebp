@@ -13,9 +13,9 @@ class Package(BaseData):
             "type": "str",
             "default": ""
         },
-        "venvs": {
+        "venv": {
             "type": "str",
-            "default": ".venvs"
+            "default": ".venv"
         },
         "version": {
             "type": "str",

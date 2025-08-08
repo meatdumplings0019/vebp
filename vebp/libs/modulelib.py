@@ -68,4 +68,7 @@ class ModuleLoader:
         return main_module
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        func_module_name = f"{self.package_name}.func"
+        if func_module_name in sys.modules:
+            del sys.modules[func_module_name]
         return False

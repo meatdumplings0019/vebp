@@ -1,9 +1,9 @@
 from typing import Any
 
-from vebp.libs.path import MPath
+from vebp.core import DataCore
 
 
-class Plugin:
+class Plugin(DataCore):
     def __init__(self, namespace: str, path, author: str, module: Any, package_name: str, meta: dict[str, Any]):
         """
         插件类封装
@@ -14,22 +14,13 @@ class Plugin:
         :param package_name: 插件包名
         :param meta: 插件元数据
         """
-        self._namespace = namespace
-        self._path = MPath.to_path(path)
+        super().__init__(namespace, path)
         self._author = author
         self.module = module
         self.package_name = package_name
         self.meta = meta
 
         self._action = True
-
-    @property
-    def namespace(self):
-        return self._namespace
-
-    @property
-    def path(self):
-        return self._path
 
     @property
     def author(self) -> str:
