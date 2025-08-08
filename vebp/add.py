@@ -80,6 +80,7 @@ def add_command(app):
             p.set_sub_main_func("list", plugin_list_command , app)
         def plugin_init(p):
             p.add_sub_argument("init", "path", default=".", nargs="?")
+            p.add_sub_argument("init", "--yes", "-y", "store_true", default=False)
 
             p.set_sub_main_func("init", plugin_init_command, app)
 
