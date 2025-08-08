@@ -12,7 +12,7 @@ from vebp.version import __version__
 class App(CliTool, Core):
     def __init__(self):
         super().__init__("vebp", __version__, "python build and package tool.")
-        super(CliTool, self).__init__("vebp", MPath.get())
+        super(CliTool, self).__init__("vebp", MPath.get_exe_dir())
         self.plugin_manager = PluginManager(self)
         self.plugin_manager.load_all_plugin()
 
@@ -31,5 +31,5 @@ class App(CliTool, Core):
             print_red("你的电脑并没有安装python环境")
             wait_for_any_key()
 
-        self.plugin_manager.run_hook_all("test")
+        self.plugin_manager.run_hook_all("init")
         super().run()

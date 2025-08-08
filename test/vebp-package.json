@@ -1,9 +1,0 @@
-{
-    "name": "test",
-    "author": "author",
-    "venv": ".venv",
-    "version": "1",
-    "main": "main.py",
-    "scripts": {},
-    "dependencies": {}
-}

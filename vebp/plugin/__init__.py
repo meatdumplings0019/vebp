@@ -54,7 +54,7 @@ class Plugin(DataCore):
             raise TypeError(f"插件 {self._namespace} 的 {hook_func_name} 不是可调用函数")
 
         try:
-            return hook_func(*args, **kwargs)
+            return hook_func(self.namespace, *args, **kwargs)
         except Exception as e:
             print(f"⚠️ 钩子执行失败 [{self._namespace}.{hook_func_name}]: {str(e)}")
             raise
