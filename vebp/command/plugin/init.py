@@ -13,6 +13,8 @@ def plugin_init_command(args, app):
     if getattr(args, "yes", False):
         plugin_init(app, path.name if path.name else Path.cwd().name, app.settings.get("author", "author"), "1.0.0", path)
 
+        return
+
     form = ConsoleInput()
 
     form.add_question(

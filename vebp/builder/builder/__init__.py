@@ -83,7 +83,7 @@ class Builder(BaseBuilder):
             return None
 
         builder = Builder(app, package_config.get('name', None), sub=sub, parent_path=parent, base_path=base_path)
-        builder.venv = package_config.get('venvs', '.venvs')
+        builder.venv = package_config.get('venv', '.venv')
 
         builder.set_script(package_config.get('main', None))
         builder.set_console(build_config.get('console', False))

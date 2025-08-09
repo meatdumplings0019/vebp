@@ -11,7 +11,7 @@ class BaseBuilder:
         self.app = app
         self._name = name
         self._base_path = MPath.to_path(base_path)
-        self._venv = ".venvs"
+        self._venv = ".venv"
         self._script_path = None
         self._project_dir = None
 

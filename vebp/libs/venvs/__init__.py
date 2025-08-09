@@ -3,7 +3,7 @@ from pathlib import Path
 from vebp.libs.system import SystemConsole
 
 
-def venv_path(venv: str = ".venvs") -> Path:
+def venv_path(venv: str = ".venv") -> Path:
     python = SystemConsole.python_venv(Path.cwd() / venv)
 
     if python.exists():

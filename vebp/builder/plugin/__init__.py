@@ -85,7 +85,7 @@ class PluginBuilder:
         try:
             # 使用 Python 命令获取 site-packages 路径
             result = subprocess.run(
-                [venv_path(Package(self.plugin_path).get("venvs", ".venvs")), "-c", "import site; print(site.getsitepackages())"],
+                [venv_path(Package(self.plugin_path).get("venvs", ".venv")), "-c", "import site; print(site.getsitepackages())"],
                 capture_output=True,
                 text=True,
                 check=True

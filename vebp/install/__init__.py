@@ -69,7 +69,7 @@ class Installer:
 
         if installed > 0:
             cmd = [
-                *pip_command(self.package.get("venvs", ".venvs")),
+                *pip_command(self.package.get("venv", ".venv")),
                 "install",
                 *to_install,
                 "-i",
@@ -99,7 +99,7 @@ class Installer:
         total = len(to_uninstall)
 
         cmd = [
-            *pip_command(self.package.get("venvs", ".venvs")),
+            *pip_command(self.package.get("venv", ".venv")),
             "uninstall",
             *to_uninstall,
             "-y"

@@ -16,7 +16,7 @@ class Runner:
     def __init__(self, app, command):
         self._builtin_mappings = {
             **self._builtin_mappings,
-            "run": str(venv_path(app.package.get(".venvs", ".venvs")))
+            "run": str(venv_path(app.package.get(".venv", ".venv")))
         }
 
         self.command = command
