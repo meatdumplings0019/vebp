@@ -6,15 +6,14 @@ from pathlib import Path
 from typing import Dict, Any, Optional, List
 
 from vebp.data.package import Package
+from vebp.data.plugin_config import PluginConfig
 from vebp.libs.file import FolderStream, FileStream
 from vebp.libs.modulelib import ModuleLoader
 from vebp.libs.path import MPath
 from vebp.libs.zip import ZipContent
 from vebp.plugin import Plugin
+from vebp.plugin.define import plugin_get_assets_path
 
-
-def plugin_get_assets_path(app, namespace):
-    return app.plugin_manager.get_plugin(namespace).assets
 
 class PluginManager:
     def __init__(self, app):
@@ -104,6 +103,159 @@ class PluginManager:
 
         FileStream.delete(src)
 
+    def run_hook(self, namespace: str, hook_name: str, *args, **kwargs) -> Any:
+        """
+        执行指定插件的钩子函数
+
+        :param namespace: 插件命名空间
+        :param hook_name: 钩子名称（不需要带 _hook 后缀）
+        :param args: 传递给钩子函数的参数
+        :param kwargs: 传递给钩子函数的关键字参数
+        :return: 钩子函数的返回值
+        """
+        if namespace in self.plugins:
+            return self.plugins[namespace].run_hook(hook_name, *args, **kwargs)
+
+        print(f"插件未加载: {namespace}")
+        return None
+
+    def run_hook_all(self, hook_name: str, *args, **kwargs) -> list[Any]:
+        if not self.plugins: return []
+
+        return [n.run_hook(hook_name, *args, **kwargs) for n in self.plugins.values()]
+
+    def get_plugin(self, namespace: str) -> Optional[Plugin]:
+        """
+        获取插件实例
+
+        :param namespace: 插件命名空间
+        :return: PluginConfig 实例或 None
+        """
+        return self.plugins.get(namespace)
+
+    def get_all_plugins(self) -> list[Plugin]:
+        """
+        获得所有插件
+
+        :return: 插件列表
+        """
+        return list(self.plugins.values())
+
+    def list_plugins(self) -> list[str]:
+        """
+        列出所有已加载插件的命名空间
+
+        :return: 插件命名空间列表
+        """
+        return list(self.plugins.keys())
+
+    def unload_plugin(self, namespace: str):
+        """
+        卸载指定插件
+
+        :param namespace: 插件命名空间
+        """
+        if namespace in self.plugins:
+            plugin = self.plugins[namespace]
+            package_name = plugin.package_name
+
+            # 清理所有相关模块
+            to_remove = [name for name in sys.modules
+                         if name == package_name or name.startswith(f"{package_name}.")]
+
+            for module_name in to_remove:
+                del sys.modules[module_name]
+
+            # 移除依赖路径
+            self._remove_dependencies_from_path(namespace)
+
+            # 清理插件记录
+            del self.plugins[namespace]
+            if package_name in self.package_paths:
+                del self.package_paths[package_name]
+
+            print(f"✅ 插件已卸载: {namespace}")
+
+            self.app.plugin_data.update_state()
+        else:
+            print(f"⚠️ 插件未加载: {namespace}")
+
+    def enable(self, namespace: str):
+        self.get_plugin(namespace).enable()
+
+    def disable(self, namespace: str):
+        self.get_plugin(namespace).disable()
+
+    def _load_single_plugin(self, plugin_path: Path):
+        """
+        加载单个插件
+
+        :param plugin_path: 插件路径
+        """
+
+        plugin_dir = Path(plugin_path)
+        meta = Package(plugin_dir)
+        meta_plugin = PluginConfig(plugin_dir)
+        namespace = meta.get("name", None)
+        author = meta.get("author", self.app.settings.get("author", "null"))
+        entry_name = meta.get("main", None)
+        func_name = meta_plugin.get("define", None, "func")
+
+        if not namespace or namespace in self.plugins:
+            return
+
+        package_name = f"plugin_{namespace}"
+        if package_name in sys.modules:
+            return
+
+        self._add_dependencies_to_path(plugin_dir, namespace)
+        func_replacements = {}
+        for func_name in self.function_registry.keys():
+            # 获取内置函数实现
+            func_impl = self.function_registry[func_name]
+
+            # 创建自动传入 app 的包装函数
+            def make_wrapper(_f: Callable) -> Callable:
+                def wrapper(*args, **kwargs) -> Any:
+                    return _f(self.app, *args, **kwargs)
+
+                # 显式设置类型和文档
+                wrapper.__name__ = _f.__name__
+                wrapper.__doc__ = _f.__doc__ if hasattr(_f, '__doc__') else None
+                # 添加类型注释
+                wrapper.__annotations__ = getattr(_f, '__annotations__', {})
+                # 添加原始函数的元数据
+                wrapper.__original_function = _f  # type: ignore
+                return wrapper
+
+            wrapped_func = make_wrapper(func_impl)
+            func_replacements[func_name] = wrapped_func
+
+        try:
+            with ModuleLoader(plugin_dir, package_name, entry_name, func_replacements, func_name) as module:
+                main_module = module
+
+        except Exception as e:
+            self._remove_dependencies_from_path(namespace)
+            raise e
+
+        plugin = Plugin(
+            namespace=namespace,
+            path=plugin_path,
+            author=author,
+            module=main_module,
+            package_name=package_name,
+            meta={**meta.file, **meta_plugin.file}
+        )
+
+        if not self.app.plugin_data.get(namespace, True, "action"):
+            plugin.disable()
+
+        self.plugins[namespace] = plugin
+        self.package_paths[package_name] = str(plugin_dir)
+
+        print(f"✅ 插件加载成功: {namespace} by {author}")
+
     def _add_dependencies_to_path(self, plugin_dir: Path, namespace: str):
         """将插件的依赖目录添加到系统路径"""
         dependencies_dir = plugin_dir / "dependencies"
@@ -148,149 +300,3 @@ class PluginManager:
 
             # 清理记录
             del self.dependency_paths[namespace]
-
-    def _load_single_plugin(self, plugin_path: Path):
-        """
-        加载单个插件
-
-        :param plugin_path: 插件路径
-        """
-
-        plugin_dir = Path(plugin_path)
-        meta = Package(plugin_dir)
-        namespace = meta.get("name", None)
-        author = meta.get("author", "null")
-        entry_name = meta.get("main", None)
-
-        if not namespace or namespace in self.plugins:
-            return
-
-        package_name = f"plugin_{namespace}"
-        if package_name in sys.modules:
-            return
-
-        # 添加依赖路径到系统路径
-        self._add_dependencies_to_path(plugin_dir, namespace)
-        func_replacements = {}
-        for func_name in self.function_registry.keys():
-            # 获取内置函数实现
-            func_impl = self.function_registry[func_name]
-
-            # 创建自动传入 app 的包装函数
-            def make_wrapper(_f: Callable) -> Callable:
-                def wrapper(*args, **kwargs) -> Any:
-                    return _f(self.app, *args, **kwargs)
-
-                # 显式设置类型和文档
-                wrapper.__name__ = _f.__name__
-                wrapper.__doc__ = _f.__doc__ if hasattr(_f, '__doc__') else None
-                # 添加类型注释
-                wrapper.__annotations__ = getattr(_f, '__annotations__', {})
-                # 添加原始函数的元数据
-                wrapper.__original_function = _f  # type: ignore
-                return wrapper
-
-            wrapped_func = make_wrapper(func_impl)
-            func_replacements[func_name] = wrapped_func
-
-        try:
-            with ModuleLoader(plugin_dir, package_name, entry_name, func_replacements) as module:
-                main_module = module
-
-        except Exception as e:
-            # 加载失败时移除依赖路径
-            self._remove_dependencies_from_path(namespace)
-            raise e
-
-        # 创建并存储 PluginConfig 实例
-        plugin = Plugin(
-            namespace=namespace,
-            path=plugin_path,
-            author=author,
-            module=main_module,
-            package_name=package_name,
-            meta=meta.file
-        )
-
-        if not self.app.plugin_data.get(namespace, True, "action"):
-            plugin.disable()
-
-        self.plugins[namespace] = plugin
-        self.package_paths[package_name] = str(plugin_dir)
-
-        print(f"✅ 插件加载成功: {namespace} by {author}")
-
-    def run_hook(self, namespace: str, hook_name: str, *args, **kwargs) -> Any:
-        """
-        执行指定插件的钩子函数
-
-        :param namespace: 插件命名空间
-        :param hook_name: 钩子名称（不需要带 _hook 后缀）
-        :param args: 传递给钩子函数的参数
-        :param kwargs: 传递给钩子函数的关键字参数
-        :return: 钩子函数的返回值
-        """
-        if namespace in self.plugins:
-            return self.plugins[namespace].run_hook(hook_name, *args, **kwargs)
-
-        print(f"插件未加载: {namespace}")
-        return None
-
-    def run_hook_all(self, hook_name: str, *args, **kwargs) -> list[Any]:
-        if not self.plugins: return []
-
-        return [n.run_hook(hook_name, *args, **kwargs) for n in self.plugins.values()]
-
-    def get_plugin(self, namespace: str) -> Optional[Plugin]:
-        """
-        获取插件实例
-
-        :param namespace: 插件命名空间
-        :return: PluginConfig 实例或 None
-        """
-        return self.plugins.get(namespace)
-
-    def list_plugins(self) -> list[Plugin]:
-        """
-        列出所有已加载插件的命名空间
-
-        :return: 插件命名空间列表
-        """
-        return list(self.plugins.values())
-
-    def unload_plugin(self, namespace: str):
-        """
-        卸载指定插件
-
-        :param namespace: 插件命名空间
-        """
-        if namespace in self.plugins:
-            plugin = self.plugins[namespace]
-            package_name = plugin.package_name
-
-            # 清理所有相关模块
-            to_remove = [name for name in sys.modules
-                         if name == package_name or name.startswith(f"{package_name}.")]
-
-            for module_name in to_remove:
-                del sys.modules[module_name]
-
-            # 移除依赖路径
-            self._remove_dependencies_from_path(namespace)
-
-            # 清理插件记录
-            del self.plugins[namespace]
-            if package_name in self.package_paths:
-                del self.package_paths[package_name]
-
-            print(f"✅ 插件已卸载: {namespace}")
-
-            self.app.plugin_data.update_state()
-        else:
-            print(f"⚠️ 插件未加载: {namespace}")
-
-    def enable(self, namespace: str):
-        self.get_plugin(namespace).enable()
-
-    def disable(self, namespace: str):
-        self.get_plugin(namespace).disable()

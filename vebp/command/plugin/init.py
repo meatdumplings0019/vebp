@@ -2,6 +2,7 @@
 from pathlib import Path
 
 from vebp.console import ConsoleInput
+from vebp.data.plugin_config import PluginConfig
 from vebp.libs.path import MPath
 from vebp.plugin.init import plugin_init
 

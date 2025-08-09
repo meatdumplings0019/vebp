@@ -5,17 +5,12 @@ from typing import Union, Optional, Dict, Callable
 
 
 class ModuleLoader:
-    def __init__(
-            self,
-            package_path: Union[Path, str],
-            package_name: str,
-            main_module_name: str,
-            func_replacements: Optional[Dict[str, Callable]] = None
-    ) -> None:
+    def __init__(self, package_path: Union[Path, str], package_name: str, main_module_name: str, func_replacements: Optional[Dict[str, Callable]] = None, func_name: Optional[str] = None) -> None:
         self.package_path = package_path
         self.package_name = package_name
         self.main_module_name = main_module_name
         self.func_replacements = func_replacements or {}
+        self.func_name = func_name or "func"
 
         self.module = None
         self.func_module = None
@@ -39,18 +34,15 @@ class ModuleLoader:
         package_module.__path__ = [str(self.package_path)]
         package_module.__package__ = self.package_name
 
-        # 1. 加载func.py模块（如果存在）
-        func_file = self.package_path / "func.py"
+        func_file = self.package_path / f"{self.func_name}.py"
         if func_file.exists():
-            # 创建func模块规范
-            func_module_name = f"{self.package_name}.func"
+            func_module_name = f"{self.package_name}.{self.func_name}"
             func_spec = importlib.util.spec_from_file_location(
                 func_module_name,
                 str(func_file),
                 submodule_search_locations=[str(self.package_path)],
             )
             if func_spec is None:
-                # 清理包模块
                 del sys.modules[self.package_name]
                 raise ImportError(f"无法创建func模块规范: {func_file}")
 

@@ -29,12 +29,18 @@ class BaseData:
         self.file = value.copy()
 
     def generate_default(self) -> dict:
-        generate = {}
+        def get(dct):
+            for k, v in dct.items():
+                if v.get("chicken", {}):
+                    dct[k] = get(v.get("chicken"))
 
-        for k, v in self.PROPERTY.items():
-            value = v.get("default", None)
-            if value is not None:
-                generate[k] = get_f_string(value)
+                value = v.get("default", None)
+                if value is not None:
+                    dct[k] = get_f_string(value)
+
+            return dct
+
+        generate = get(self.PROPERTY)
 
         return generate
 

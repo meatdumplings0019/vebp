@@ -18,3 +18,7 @@ class DataCore:
     @property
     def assets(self):
         return self.path / "assets"
+
+    @property
+    def data(self):
+        return self.path / "data"
