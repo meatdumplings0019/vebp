@@ -8,6 +8,7 @@ class PluginConfig(BaseData):
         "define": {
             "chicken": {
                 "func": {
+                    "generate": True,
                     "default": "func"
                 }
             }

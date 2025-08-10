@@ -7,26 +7,32 @@ class Package(BaseData):
     PROPERTY = {
         "name": {
             "type": "str",
-            "default": "name"
+            "generate": True,
+            "default": "$name"
         },
         "author": {
             "type": "str",
+            "generate": True,
             "default": ""
         },
         "venv": {
             "type": "str",
+            "generate": True,
             "default": ".venv"
         },
         "version": {
             "type": "str",
+            "generate": True,
             "default": ""
         },
         "main": {
             "type": "str",
+            "generate": True,
             "default": "run.py"
         },
         "scripts": {
             "type": "dict",
+            "generate": True,
             "default": {}
         },
         "url": {
@@ -34,6 +40,7 @@ class Package(BaseData):
         },
         "dependencies": {
             "type": "dict",
+            "generate": True,
             "default": {}
         }
     }

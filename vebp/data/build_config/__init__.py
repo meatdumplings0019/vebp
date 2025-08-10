@@ -6,6 +6,7 @@ class BuildConfig(BaseData):
 
     PROPERTY = {
         "console": {
+            "generate": True,
             "default": False,
         },
         "auto_run": {},

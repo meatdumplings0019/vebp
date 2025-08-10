@@ -31,12 +31,12 @@ class BaseData:
     def generate_default(self) -> dict:
         def get(dct):
             for k, v in dct.items():
-                if v.get("chicken", {}):
-                    dct[k] = get(v.get("chicken"))
+                chicken = v.get("chicken", {})
+                if chicken:
+                    dct[k] = chicken
 
-                value = v.get("default", None)
-                if value is not None:
-                    dct[k] = get_f_string(value)
+                if v.get("generate", False):
+                    dct[k] = get_f_string(v.get("default", None))
 
             return dct
 
