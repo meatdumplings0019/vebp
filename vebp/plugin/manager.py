@@ -200,6 +200,7 @@ class PluginManager:
         author = meta.get("author", self.app.settings.get("author", "null"))
         entry_name = meta.get("main", None)
         func_name = meta_plugin.get("define", None, "func")
+        dev = meta_plugin.get("devDependencies", [])
 
         if not namespace or namespace in self.plugins:
             return
@@ -208,7 +209,7 @@ class PluginManager:
         if package_name in sys.modules:
             return
 
-        self._add_dependencies_to_path(plugin_dir, namespace)
+        self._add_dependencies_to_path(plugin_dir, namespace, dev)
         func_replacements = {}
         for func_name in self.function_registry.keys():
             # 获取内置函数实现
@@ -256,7 +257,7 @@ class PluginManager:
 
         print(f"✅ 插件加载成功: {namespace} by {author}")
 
-    def _add_dependencies_to_path(self, plugin_dir: Path, namespace: str):
+    def _add_dependencies_to_path(self, plugin_dir: Path, namespace: str, dev):
         """将插件的依赖目录添加到系统路径"""
         dependencies_dir = plugin_dir / "dependencies"
         added_paths = []
@@ -266,7 +267,7 @@ class PluginManager:
             print(f"🔍 为插件 {namespace} 添加依赖路径: {dependencies_dir}")
 
             # 遍历依赖目录中的所有子目录
-            for item in dependencies_dir.iterdir():
+            for item in [i for i in dependencies_dir.iterdir()] + dev:
                 if item.is_dir():
                     # 添加到系统路径
                     sys.path.insert(0, str(item))

@@ -12,5 +12,9 @@ class PluginConfig(BaseData):
                     "default": "func"
                 }
             }
+        },
+        "devDependencies": {
+            "generate": True,
+            "default": []
         }
     }
