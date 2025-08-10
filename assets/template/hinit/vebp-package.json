@@ -4,7 +4,10 @@
     "venv": ".venv",
     "version": "$version",
     "main": "run.py",
-    "scripts": {},
+    "scripts": {
+        "dev": "run run.py",
+        "build": "build"
+    },
     "dependencies": {
         "colorama": "0.4.6"
     }

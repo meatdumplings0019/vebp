@@ -8,7 +8,7 @@ from vebp.libs.venvs import venv_path
 
 class Runner:
     _builtin_mappings = {
-        "build": ["vebp", "build"],
+        "build": "vebp build",
     }
 
     _plugin_mappings = {}
@@ -32,7 +32,7 @@ class Runner:
             self._builtin_mappings.get(command_head, command_head)
         )
 
-        return [*[i for i in list(resolved)], *parts[1:]]
+        return [*resolved.strip().split(), *parts[1:]]
 
 
     def get_available_commands(self):
