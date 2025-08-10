@@ -258,6 +258,17 @@ class PluginManager:
         print(f"✅ 插件加载成功: {namespace} by {author}")
 
     def _add_dependencies_to_path(self, plugin_dir: Path, namespace: str, dev):
+        def add(path):
+            sys.path.insert(0, str(path))
+            added_paths.append(str(path))
+
+            # 对于 Windows 系统，将 .libs 目录添加到 PATH
+            if sys.platform == "win32":
+                libs_path = path / ".libs"
+                if libs_path.exists() and libs_path.is_dir():
+                    os.environ["PATH"] = str(libs_path) + os.pathsep + os.environ["PATH"]
+                    added_paths.append(str(libs_path))
+
         """将插件的依赖目录添加到系统路径"""
         dependencies_dir = plugin_dir / "dependencies"
         added_paths = []
@@ -267,21 +278,16 @@ class PluginManager:
             print(f"🔍 为插件 {namespace} 添加依赖路径: {dependencies_dir}")
 
             # 遍历依赖目录中的所有子目录
-            for item in [i for i in dependencies_dir.iterdir()] + dev:
+            for item in dependencies_dir.iterdir():
                 if item.is_dir():
-                    # 添加到系统路径
-                    sys.path.insert(0, str(item))
-                    added_paths.append(str(item))
-
-                    # 对于 Windows 系统，将 .libs 目录添加到 PATH
-                    if sys.platform == "win32":
-                        libs_path = item / ".libs"
-                        if libs_path.exists() and libs_path.is_dir():
-                            os.environ["PATH"] = str(libs_path) + os.pathsep + os.environ["PATH"]
-                            added_paths.append(str(libs_path))
+                    add(item)
 
             # 保存添加的路径，以便卸载时移除
             self.dependency_paths[namespace] = added_paths
+
+        for item in [Path(i) for i in dev]:
+            if item.is_dir() and item.exists():
+                add(item)
 
     def _remove_dependencies_from_path(self, namespace: str):
         """从系统路径中移除插件的依赖"""
