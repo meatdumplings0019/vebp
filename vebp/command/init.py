@@ -4,7 +4,7 @@ from pathlib import Path
 from vebp.console import ConsoleInput, Choice
 from vebp.data.build_config import BuildConfig
 from vebp.data.package import Package
-from vebp.libs.file import FolderStream
+from vebp.libs.file import FolderStream, FileStream
 
 
 def init_command(args, app):
@@ -85,8 +85,23 @@ def init_command(args, app):
         description="创建默认模板"
     )
 
-    result = form.run()
+    form.add_question(
+        key="gitignore",
+        question_type="confirm",
+        prompt="是否创建.gitignore?",
+        default=True,
+        description="创建.gitignore"
+    )
 
+    form.add_question(
+        key="README",
+        question_type="confirm",
+        prompt="是否创建README.md?",
+        default=True,
+        description="创建README.md"
+    )
+
+    result = form.run()
 
     if result.template:
         template = app.template / result.template
@@ -99,5 +114,14 @@ def init_command(args, app):
 
     else:
         create(result.force, result.name, result.author, result.version)
+
+    if result.gitignore:
+        fs.copy(app.template / ".gitignore", fs)
+
+    if result.README:
+        fs.copy(app.template / "README.md", fs)
+        f = FileStream(fs.path / "README.md")
+        s = f.read().format(name=result.name)
+        f.write(s)
 
     print("创建成功!\n")
