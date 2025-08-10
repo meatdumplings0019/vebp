@@ -211,9 +211,9 @@ class PluginManager:
 
         self._add_dependencies_to_path(plugin_dir, namespace, dev)
         func_replacements = {}
-        for func_name in self.function_registry.keys():
+        for name in self.function_registry.keys():
             # 获取内置函数实现
-            func_impl = self.function_registry[func_name]
+            func_impl = self.function_registry[name]
 
             # 创建自动传入 app 的包装函数
             def make_wrapper(_f: Callable) -> Callable:
@@ -230,7 +230,7 @@ class PluginManager:
                 return wrapper
 
             wrapped_func = make_wrapper(func_impl)
-            func_replacements[func_name] = wrapped_func
+            func_replacements[name] = wrapped_func
 
         try:
             with ModuleLoader(plugin_dir, package_name, entry_name, func_replacements, func_name) as module:
