@@ -4,10 +4,10 @@ from vebp.libs.types import path_type
 
 
 def plugin_init(app, name: str, author: str, version: str, to_path: path_type):
-    source = app.template / "plugin"
+    source = FolderStream(app.template / "plugin")
     fs = FolderStream(to_path).create()
 
-    fs.copy(source, fs)
+    source.copy(fs)
 
     package = Package(fs)
 

@@ -8,6 +8,8 @@ from vebp.command.plugin.install import plugin_install_command
 from vebp.command.plugin.list import plugin_list_command
 from vebp.command.plugin.uninstall import plugin_uninstall_command
 from vebp.command.plugin.unload import plugin_unload_command
+from vebp.command.plugin.update import plugin_update_command
+from vebp.command.plugin.update.func import plugin_update_func_command
 from vebp.command.python import python_command
 from vebp.command.python.version import python_version_command
 from vebp.command.runner import run_command
@@ -61,39 +63,57 @@ def add_command(app):
         app.set_sub_main_func("build", build_command, app)
     def plugin():
         def plugin_build(p):
+            p.add_command("build", '🔨 构建插件')
+
             p.add_sub_argument("build", "path", _help="📂 插件路径")
 
             p.set_sub_main_func("build", plugin_build_command, app)
         def plugin_install(p):
+            p.add_command('install', "💿 安装插件")
+
             p.add_sub_argument("install", "path", _help="📂 插件路径")
 
             p.set_sub_main_func("install", plugin_install_command, app)
         def plugin_uninstall(p):
+            p.add_command('uninstall', "💿 卸载插件")
+
             p.add_sub_argument("uninstall", "name", _help="📂 插件名称")
 
             p.set_sub_main_func("uninstall", plugin_uninstall_command, app)
         def plugin_unload(p):
+            p.add_command('unload', "💿 停止加载插件")
+
             p.add_sub_argument("unload", "name", _help="📂 插件名称")
 
             p.set_sub_main_func("unload", plugin_unload_command, app)
         def plugin_list(p):
+            p.add_command('list', "💿 展示插件")
+
             p.set_sub_main_func("list", plugin_list_command , app)
         def plugin_init(p):
+            p.add_command("init", "🛠️ 初始化插件")
+
             p.add_sub_argument("init", "path", default=".", nargs="?")
             p.add_sub_argument("init", "--yes", "-y", "store_true", default=False)
 
             p.set_sub_main_func("init", plugin_init_command, app)
+        def plugin_update(p):
+            def plugin_update_func(p2):
+                p2.add_command("func", "🛠️ 更新func.py文件")
+
+                p2.add_sub_argument("func", "path", _help="📂 插件路径")
+
+                p2.set_sub_main_func("func", plugin_update_func_command, app)
+
+            p.add_command("update", "🛠️ 更新插件")
+
+            p.set_sub_main_func("update", plugin_update_command, app)
+
+            plugin_update_func(p.get("update"))
 
         app.add_command("plugin", "🧩 PluginConfig Tool")
 
         app.set_sub_main_func("plugin", plugin_command, app)
-
-        app.add_sub_command("plugin", "build", '🔨 构建插件')
-        app.add_sub_command("plugin", 'install', "💿 安装插件")
-        app.add_sub_command("plugin", 'uninstall', "💿 卸载插件")
-        app.add_sub_command("plugin", 'unload', "💿 停止加载插件")
-        app.add_sub_command("plugin", 'list', "💿 展示插件")
-        app.add_sub_command("plugin", "init", "🛠️ 初始化插件")
 
         plugin_build(app.get("plugin"))
         plugin_install(app.get("plugin"))
@@ -101,6 +121,7 @@ def add_command(app):
         plugin_unload(app.get("plugin"))
         plugin_list(app.get("plugin"))
         plugin_init(app.get("plugin"))
+        plugin_update(app.get("plugin"))
     def run():
         app.add_command("run", "🚀 运行 package 中定义的脚本")
 

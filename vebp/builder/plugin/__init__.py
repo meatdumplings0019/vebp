@@ -221,7 +221,7 @@ class PluginBuilder:
             if dep_map:
                 self._copy_dependencies(temp_build_dir, dep_map)
 
-            FileStream.copy(self.plugin_path, temp_build_dir, [
+            FileStream(self.plugin_path).copy(temp_build_dir, [
                 '*.pyc', '*.pyo', '*.pyd', '*.log', '*.tmp', '*.bak',
                 '__pycache__', '.git', '.idea', '.vscode', 'node_modules', 'dist', 'build',
                 '.DS_Store'

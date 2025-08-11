@@ -5,6 +5,7 @@ from vebp.console import ConsoleInput
 from vebp.data.plugin_config import PluginConfig
 from vebp.libs.path import MPath
 from vebp.plugin.init import plugin_init
+from vebp.plugin.utils import copy_func_file
 
 
 def plugin_init_command(args, app):
@@ -12,6 +13,7 @@ def plugin_init_command(args, app):
 
     if getattr(args, "yes", False):
         plugin_init(app, path.name if path.name else Path.cwd().name, app.settings.get("author", "author"), "1.0.0", path)
+        copy_func_file(app, path)
 
         return
 
@@ -51,3 +53,5 @@ def plugin_init_command(args, app):
     result = form.run()
 
     plugin_init(app, result.name, result.author, result.version, path)
+
+    copy_func_file(app, path)

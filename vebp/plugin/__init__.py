@@ -1,6 +1,7 @@
 from typing import Any
 
 from vebp.core import DataCore
+from vebp.registry import Registry
 
 
 class Plugin(DataCore):
@@ -30,19 +31,21 @@ class Plugin(DataCore):
     def action(self):
         return self._action
 
-    def run_hook(self, hook_name: str, *args, **kwargs) -> Any:
+    def run(self, hook_name: str, suffix: str, *args, **kwargs) -> Any:
         """
-        执行插件的钩子函数
+        执行函数
 
-        :param hook_name: 钩子名称（不需要带 _hook 后缀）
+        :param hook_name: 钩子名称
+        :param suffix: 后缀名称
         :param args: 传递给钩子函数的参数
         :param kwargs: 传递给钩子函数的关键字参数
         :return: 钩子函数的返回值
         """
+
         if not self._action:
             return None
 
-        hook_func_name = f"{hook_name}_hook"
+        hook_func_name = f"{hook_name}_{suffix}"
 
         if not hasattr(self.module, hook_func_name):
             print(f"插件 {self._namespace} 未定义钩子函数: {hook_func_name}")
@@ -58,6 +61,21 @@ class Plugin(DataCore):
         except Exception as e:
             print(f"⚠️ 钩子执行失败 [{self._namespace}.{hook_func_name}]: {str(e)}")
             raise
+
+    def run_hook(self, hook_name: str, *args, **kwargs) -> Any:
+        """
+        执行插件的钩子函数
+
+        :param hook_name: 钩子名称（不需要带 _hook 后缀）
+        :param args: 传递给钩子函数的参数
+        :param kwargs: 传递给钩子函数的关键字参数
+        :return: 钩子函数的返回值
+        """
+
+        return self.run(hook_name, "hook", *args, **kwargs)
+
+    def register(self, register_name: str, *args, **kwargs) -> Registry:
+        return Registry(self.run(register_name, "register", *args, **kwargs))
 
     def get_meta(self) -> dict[str, Any]:
         """获取插件元数据"""

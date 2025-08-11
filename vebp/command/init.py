@@ -116,12 +116,11 @@ def init_command(args, app):
         create(result.force, result.name, result.author, result.version)
 
     if result.gitignore:
-        fs.copy(app.template / ".gitignore", fs)
+        FileStream(app.template / ".gitignore").copy(fs)
 
     if result.README:
-        fs.copy(app.template / "README.md", fs)
         f = FileStream(fs.path / "README.md")
-        s = f.read().format(name=result.name)
-        f.write(s)
+        f.copy(fs)
+        f.write(f.read().format(name=result.name))
 
     print("创建成功!\n")

@@ -8,11 +8,13 @@ from typing import Dict, Any, Optional, List
 from vebp.data.package import Package
 from vebp.data.plugin_config import PluginConfig
 from vebp.libs.file import FolderStream, FileStream
+from vebp.libs.filterate import filter_null
 from vebp.libs.modulelib import ModuleLoader
 from vebp.libs.path import MPath
 from vebp.libs.zip import ZipContent
 from vebp.plugin import Plugin
-from vebp.plugin.define import plugin_get_assets_path
+from vebp.plugin.define import *
+from vebp.registry import Registry
 
 
 class PluginManager:
@@ -31,6 +33,7 @@ class PluginManager:
 
         self.function_registry: Dict[str, Callable] = {
             "get_assets_path": plugin_get_assets_path,
+            "get_data_path": plugin_get_data_path
         }
 
     def load_all_plugin(self):
@@ -83,7 +86,7 @@ class PluginManager:
         if out.exists():
             shutil.rmtree(out, ignore_errors=True)
 
-        result = FileStream.copy(path, des)
+        result = FolderStream(path).copy(des)
 
         try:
             if not result:
@@ -96,12 +99,12 @@ class PluginManager:
 
     def uninstall(self, name) -> None:
         self.unload_plugin(name)
-        src = self.app.plugins / name
-        if not src.is_dir():
+        src = FolderStream(self.app.plugins / name)
+        if not src.path.is_dir():
             name = f'{name}.zip'
-            src = self.app.plugins / name
+            src = FileStream(self.app.plugins / name)
 
-        FileStream.delete(src)
+        src.delete()
 
     def run_hook(self, namespace: str, hook_name: str, *args, **kwargs) -> Any:
         """
@@ -122,7 +125,19 @@ class PluginManager:
     def run_hook_all(self, hook_name: str, *args, **kwargs) -> list[Any]:
         if not self.plugins: return []
 
-        return [n.run_hook(hook_name, *args, **kwargs) for n in self.plugins.values()]
+        return filter_null([n.run_hook(hook_name, *args, **kwargs) for n in self.plugins.values()])
+
+    def register(self, namespace: str, register_name: str, *args, **kwargs) -> Optional[Registry]:
+        if namespace in self.plugins:
+            return self.plugins[namespace].register(register_name, *args, **kwargs)
+
+        print(f"插件未加载: {namespace}")
+        return None
+
+    def register_all(self, register_name: str, *args, **kwargs) -> list[Registry]:
+        if not self.plugins: return []
+
+        return filter_null([n.register(register_name, *args, **kwargs) for n in self.plugins.values()])
 
     def get_plugin(self, namespace: str) -> Optional[Plugin]:
         """

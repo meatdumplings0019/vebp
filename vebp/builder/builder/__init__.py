@@ -211,7 +211,7 @@ class Builder(BaseBuilder):
 
             for source in sources:
                 target_folder = FolderStream(str(target_path / source))
-                FolderStream.copy(source, target_folder)
+                FolderStream(source).copy(target_folder)
 
         return success
 
@@ -313,7 +313,7 @@ class Builder(BaseBuilder):
             else:
                 source_path = Path('dist') / self.name
 
-            copy = FileStream.copy(source_path, self._project_dir)
+            copy = FileStream(source_path).copy(self._project_dir)
 
             run_path = self._project_dir / f"{SystemConsole.exe(self.name)}"
 

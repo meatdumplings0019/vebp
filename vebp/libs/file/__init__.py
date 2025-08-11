@@ -11,12 +11,15 @@ class Stream:
     def __init__(self, path: path_type):
         self._path = MPath.to_path(path)
 
-    @staticmethod
-    def copy(source, destination, ignore=None):
+    @property
+    def name(self) -> str:
+        return self.path.name
+
+    def copy(self, destination, ignore=None):
         if ignore is None:
             ignore = []
 
-        source = MPath.to_path(source)
+        source = MPath.to_path(self.path)
         destination = MPath.to_path(destination)
 
         if not source.exists():
@@ -40,9 +43,8 @@ class Stream:
 
         return True
 
-    @staticmethod
-    def delete(source):
-        source = MPath.to_path(source)
+    def delete(self):
+        source = MPath.to_path(self.path)
 
         if source.is_dir():
             shutil.rmtree(source, ignore_errors=True)
@@ -68,10 +70,6 @@ class Stream:
 
 
 class FileStream(Stream):
-    @property
-    def name(self) -> str:
-        return self.path.name
-
     @property
     def suffix(self) -> str:
         return self.path.suffix
