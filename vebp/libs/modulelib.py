@@ -7,12 +7,13 @@ from vebp.libs.function import FunctionInjection
 
 
 class ModuleLoader:
-    def __init__(self, package_path: Union[Path, str], package_name: str, main_module_name: str, func_replacements: Optional[Dict[str, Callable]] = None, func_name: Optional[str] = None) -> None:
+    def __init__(self, package_path: Union[Path, str], package_name: str, main_module_name: str, func_name: Optional[str] = None, func_replacements: Optional[Dict[str, Callable]] = None, class_replacements: Optional[dict] = None) -> None:
         self.package_path = package_path
         self.package_name = package_name
         self.main_module_name = main_module_name
-        self.func_replacements = func_replacements or {}
         self.func_name = func_name or "func"
+        self.func_replacements = func_replacements or {}
+        self.class_replacements = class_replacements or {}
 
         self.module = None
         self.func_module = None
@@ -34,7 +35,7 @@ class ModuleLoader:
         package_module.__path__ = [str(self.package_path)]
         package_module.__package__ = self.package_name
 
-        with FunctionInjection(self.package_path, self.package_name, self.func_name, self.func_replacements) as module:
+        with FunctionInjection(self.package_path, self.package_name, self.func_name, {**self.func_replacements, **self.class_replacements}) as module:
             self.func_module = module
 
         entry_file = self.package_path / self.main_module_name

@@ -40,8 +40,7 @@ class FunctionInjection:
 
                 # 替换func模块中的函数
                 for func_name, replacement in self.func_replacements.items():
-                    if hasattr(self.func_module, func_name):
-                        setattr(self.func_module, func_name, replacement)
+                    setattr(self.func_module, func_name, replacement)
             except Exception as e:
                 # 清理
                 del sys.modules[func_module_name]

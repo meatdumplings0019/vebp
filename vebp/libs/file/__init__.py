@@ -15,6 +15,14 @@ class Stream:
     def name(self) -> str:
         return self.path.name
 
+    @property
+    def path(self) -> Path:
+        return self._path
+
+    @property
+    def exists(self) -> bool:
+        return self.path.exists()
+
     def copy(self, destination, ignore=None):
         if ignore is None:
             ignore = []
@@ -50,14 +58,6 @@ class Stream:
             shutil.rmtree(source, ignore_errors=True)
         else:
             source.unlink(missing_ok=True)
-
-    @property
-    def path(self) -> Path:
-        return self._path
-
-    @property
-    def exists(self) -> bool:
-        return self.path.exists()
 
     def __eq__(self, other):
         return self.path == other.path

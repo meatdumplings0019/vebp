@@ -10,3 +10,6 @@ class Registry:
 
     def get(self) -> Generator[Any, None, None]:
         return (i for i in self.value)
+
+    def __repr__(self):
+        return f"[Registry {self.value}]"

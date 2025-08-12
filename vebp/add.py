@@ -1,4 +1,5 @@
 from vebp.command.build import build_command
+from vebp.command.create import create_command
 from vebp.command.init import init_command
 from vebp.command.install import install_command
 from vebp.command.plugin import plugin_command
@@ -125,7 +126,7 @@ def add_command(app):
     def run():
         app.add_command("run", "🚀 运行 package 中定义的脚本")
 
-        app.add_sub_argument("run", 'script', help='📜 要运行的脚本名称')
+        app.add_sub_argument("run", 'script', _help='📜 要运行的脚本名称')
 
         app.set_sub_main_func("run", run_command, app)
     def python():
@@ -142,6 +143,12 @@ def add_command(app):
         app.add_sub_command("python", "version", 'ℹ️ 显示Python版本信息')
 
         python_version(app.get("python"))
+    def create():
+        app.add_command("create", "🧩 tool")
+
+        app.add_sub_argument("create", 'name', nargs="?", _help='📜 名称')
+
+        app.set_sub_main_func("create", create_command, app)
 
     init()
     install()
@@ -151,3 +158,4 @@ def add_command(app):
     plugin()
     run()
     python()
+    create()

@@ -8,6 +8,7 @@ from typing import Dict, Any, Optional, List
 from vebp.data.package import Package
 from vebp.data.plugin_config import PluginConfig
 from vebp.libs.file import FolderStream, FileStream
+from vebp.libs.file.json import JsonStream
 from vebp.libs.filterate import filter_null
 from vebp.libs.modulelib import ModuleLoader
 from vebp.libs.path import MPath
@@ -34,6 +35,12 @@ class PluginManager:
         self.function_registry: Dict[str, Callable] = {
             "get_assets_path": plugin_get_assets_path,
             "get_data_path": plugin_get_data_path
+        }
+
+        self.class_registry = {
+            "FileStream": FileStream,
+            "FolderStream": FolderStream,
+            "JsonStream": JsonStream,
         }
 
     def load_all_plugin(self):
@@ -248,7 +255,7 @@ class PluginManager:
             func_replacements[name] = wrapped_func
 
         try:
-            with ModuleLoader(plugin_dir, package_name, entry_name, func_replacements, func_name) as module:
+            with ModuleLoader(plugin_dir, package_name, entry_name, func_name, func_replacements, self.class_registry) as module:
                 main_module = module
 
         except Exception as e:
