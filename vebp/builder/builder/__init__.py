@@ -10,6 +10,7 @@ from vebp.data.build_config import BuildConfig
 from vebp.data.package import Package
 from vebp.libs.color import print_red
 from vebp.libs.file import FileStream, FolderStream
+from vebp.libs.string import get_fs
 from vebp.libs.system import SystemConsole
 from vebp.libs.venvs import venv_path
 
@@ -26,6 +27,7 @@ class Builder(BaseBuilder):
         self._parent_path = parent_path
         self._exclude_modules = []
         self._exclude_commands = []
+        self._before_events = []
 
         self._auto_run = True
 
@@ -117,6 +119,9 @@ class Builder(BaseBuilder):
 
         exclude_commands = build_config.get('exclude_commands', [])
         builder._exclude_commands = exclude_commands
+
+        before_events = build_config.get('before_events', [])
+        builder._before_events = before_events
 
         return builder
 
@@ -295,6 +300,22 @@ class Builder(BaseBuilder):
         for pro in self.sub_project_builder:
             pro.build()
 
+    def _run_before_events(self) -> None:
+        dct = {
+            "DIR": self._project_dir
+        }
+
+        for event in self._before_events:
+            cmd = get_fs(event, dct).split()
+            try:
+                match cmd[0]:
+                    case "copy":
+                        FolderStream(cmd[1]).copy(cmd[2])
+                    case _:
+                        SystemConsole.execute(cmd)
+            except Exception as e:
+                print_red(f"{e}")
+
     def build(self) -> bool:
         self._get_path()
 
@@ -325,6 +346,9 @@ class Builder(BaseBuilder):
                 self._run_executable(run_path)
 
             print("✅ 打包成功")
+
+            self._run_before_events()
+
             return copy and assets
         except subprocess.CalledProcessError as e:
             print("\n❌ ", end="")

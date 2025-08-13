@@ -2,7 +2,7 @@
 ; 有关创建 Inno Setup 脚本文件的详细资料请查阅帮助文档！
 
 #define MyAppName "vebp"
-#define MyAppVersion "1.2.1"
+#define MyAppVersion "1.2.2"
 #define MyAppPublisher "ndrzy"
 #define MyAppURL "https://github.com/meatdumplings0019/vebp"
 #define MyAppExeName "vebp.exe"

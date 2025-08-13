@@ -66,7 +66,7 @@ class CreateObject:
 
         fs = FolderStream(Path.cwd() / result.name).create()
         FolderStream(self.assets_path).copy(fs)
-        smart_call(self.main_func, self)
+        smart_call(self.main_func, result)
 
     def __repr__(self):
         return f"[CreateObject {self.name}]"

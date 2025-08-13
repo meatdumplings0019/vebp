@@ -16,5 +16,6 @@ class BuildConfig(BaseData):
         "in_assets": {},
         "sub_project": {},
         "exclude_modules": {},
-        "exclude_commands": {}
+        "exclude_commands": {},
+        "before_events": {}
     }

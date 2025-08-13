@@ -8,5 +8,8 @@
             ],
             "to": "."
         }
+    ],
+    "before_events": [
+        "copy $DIR\\assets $DIR\\others\\assets"
     ]
 }
