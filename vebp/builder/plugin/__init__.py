@@ -13,12 +13,14 @@ from vebp.libs.venvs import venv_path
 class PluginBuilder:
     """插件构建器，专门用于将插件目录打包为 ZIP 格式"""
 
-    def __init__(self, plugin_dir: str) -> None:
+    def __init__(self, app, plugin_dir: str) -> None:
         """
         初始化插件构建器
 
         :param plugin_dir: 插件目录路径
         """
+        self.app = app
+
         self.plugin_path = Path(plugin_dir).resolve()
         if not self.plugin_path.exists():
             raise FileNotFoundError(f"🔴 插件目录不存在: {plugin_dir}")
@@ -227,7 +229,7 @@ class PluginBuilder:
                 '.DS_Store'
             ])
 
-            zip_filename = f"{self.plugin_name}.zip"
+            zip_filename = f"{self.plugin_name}.{self.app.plugin_manager.suffix}"
             zip_path = self.output_dir / zip_filename
             self._create_zip_archive(temp_build_dir, zip_path)
 

@@ -33,6 +33,11 @@ class PluginManager:
         # 记录每个插件添加的依赖路径
         self.dependency_paths: Dict[str, List[str]] = {}
 
+        def suffix():
+            fs = JsonStream(app.data / "plugin.json")
+            return fs.read().get("suffix", "zip")
+        self.suffix = suffix()
+
         self.app_function_registry: Dict[str, Callable] = {
             "get_assets_path": plugin_get_assets_path,
             "get_data_path": plugin_get_data_path
@@ -56,7 +61,7 @@ class PluginManager:
         f = FolderStream(self.app.plugins)
 
         for fs in f.walk().files:
-            if fs.suffix == ".zip":
+            if fs.suffix == f".{self.suffix}":
                 self.load_plugin(fs.path)
 
         for ff in f.walk().folders:
@@ -73,12 +78,13 @@ class PluginManager:
         try:
             plugin = Path(str(path))
 
-            if FileStream(plugin).suffix == ".zip":
+            if FileStream(plugin).suffix == f".{self.suffix}":
                 with ZipContent(plugin) as zipf:
                     self._load_single_plugin(zipf)
-
-            if plugin.is_dir():
+            elif plugin.is_dir():
                 self._load_single_plugin(plugin)
+            else:
+                return
 
             self.app.plugin_data.update_state()
 
@@ -114,7 +120,7 @@ class PluginManager:
         self.unload_plugin(name)
         src = FolderStream(self.app.plugins / name)
         if not src.path.is_dir():
-            name = f'{name}.zip'
+            name = f'{name}.{self.suffix}'
             src = FileStream(self.app.plugins / name)
 
         src.delete()
