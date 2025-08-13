@@ -12,6 +12,7 @@ from vebp.libs.file.json import JsonStream
 from vebp.libs.filterate import filter_null
 from vebp.libs.modulelib import ModuleLoader
 from vebp.libs.path import MPath
+from vebp.libs.string import get_fs
 from vebp.libs.zip import ZipContent
 from vebp.plugin import Plugin
 from vebp.plugin.define import *
@@ -32,9 +33,14 @@ class PluginManager:
         # 记录每个插件添加的依赖路径
         self.dependency_paths: Dict[str, List[str]] = {}
 
-        self.function_registry: Dict[str, Callable] = {
+        self.app_function_registry: Dict[str, Callable] = {
             "get_assets_path": plugin_get_assets_path,
             "get_data_path": plugin_get_data_path
+        }
+
+        self.func_registry: Dict[str, Callable] = {
+            "get_fs": get_fs,
+            "filter_null": filter_null
         }
 
         self.class_registry = {
@@ -233,9 +239,9 @@ class PluginManager:
 
         self._add_dependencies_to_path(plugin_dir, namespace, dev)
         func_replacements = {}
-        for name in self.function_registry.keys():
+        for name in self.app_function_registry.keys():
             # 获取内置函数实现
-            func_impl = self.function_registry[name]
+            func_impl = self.app_function_registry[name]
 
             # 创建自动传入 app 的包装函数
             def make_wrapper(_f: Callable) -> Callable:
@@ -255,7 +261,7 @@ class PluginManager:
             func_replacements[name] = wrapped_func
 
         try:
-            with ModuleLoader(plugin_dir, package_name, entry_name, func_name, func_replacements, self.class_registry) as module:
+            with ModuleLoader(plugin_dir, package_name, entry_name, func_name, func_replacements, self.func_registry, self.class_registry) as module:
                 main_module = module
 
         except Exception as e:

@@ -30,11 +30,10 @@ class Stream:
         source = MPath.to_path(self.path)
         destination = MPath.to_path(destination)
 
+        FolderStream(destination).create()
+
         if not source.exists():
             return False
-
-        if not destination.exists():
-            FolderStream(destination).create()
 
         if source.is_dir():
             shutil.copytree(
@@ -126,7 +125,7 @@ class FolderStream(Stream):
         if self.exists:
             return self
 
-        self.path.mkdir(exist_ok=True)
+        self.path.mkdir(parents=True, exist_ok=True)
 
         return self
 

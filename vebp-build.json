@@ -1,15 +1,17 @@
 {
     "console": true,
-    "icon": "icon.ico",
+    "icon": "assets/icon.ico",
     "assets": [
         {
             "from": [
-                "assets"
+                "assets",
+                "data"
             ],
             "to": "."
         }
     ],
     "before_events": [
-        "copy $DIR\\assets $DIR\\others\\assets"
+        "copy $DIR\\assets $DIR\\others\\assets",
+        "copy $DIR\\data $DIR\\others\\data"
     ]
 }

@@ -5,6 +5,7 @@ from pathlib import Path
 from vebp.config import mirror_url
 from vebp.data.package import Package
 from vebp.libs.color import print_red
+from vebp.libs.file.json import JsonStream
 from vebp.libs.system import SystemConsole
 from vebp.libs.venvs.package import is_package_installed
 from vebp.libs.venvs.pip import pip_command
@@ -40,7 +41,11 @@ class Installer:
         return to_install
 
     def install(self, packages, write: bool = True):
-        url = self.package.get("url", self.app.settings.get_value("mirror_url", mirror_url))
+        def default_url():
+            fs = JsonStream(self.app.data / "install.json")
+            return fs.read().get("url", mirror_url)
+
+        url = self.package.get("url", self.app.settings.get_value("mirror_url", default_url()))
 
         to_install = self._installed(packages)
 
